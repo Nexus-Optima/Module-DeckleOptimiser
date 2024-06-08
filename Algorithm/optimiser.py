@@ -1,7 +1,9 @@
 from pulp import *
 from collections import defaultdict
 import pandas as pd
-
+import numpy as np
+from collections import Counter
+import Constants.parameters as prms
 
 # converts an array to a dictionary with the count being the value
 def array_to_dict(arr):
@@ -163,48 +165,74 @@ def get_combined_optional_must_make(residual_dict, must_make_values, optional_va
             option_and_must_values.append(i)
     return option_and_must_dict, option_and_must_values
 
-
-must_make_values = [1160, 730, 1015, 700, 830]
-must_make_number_repetitions = [6, 6, 15, 4, 6]
-# optional_values = [450,550,625,750,950,1080]
-# optional_number = [15,4,12,16,3,15]
-# optional_number_dict = dict(zip(optional_values,optional_number))
-min_arms = 4
-max_arms = 16
-position = range(1, max_arms + 1)
-must_make_number_dict = dict(zip(must_make_values, must_make_number_repetitions))
-residual_dict = must_make_number_dict.copy()
-max_width = 8700 - 200
-flag = 1
-final_list_deckles = []
-while flag == 1:
-    op_deckle, residual_dict, flag = get_optimised_wastage_deckle(must_make_values, residual_dict, position, max_width,
-                                                                  min_arms)
-    op_deckle = sorted(op_deckle)
-    if flag == 1:
-        final_list_deckles.append(op_deckle)
-        repeat_flag = 1
-        while repeat_flag == 1:
-            op_deckle, residual_dict, repeat_flag = get_repetitive_deckle(op_deckle, residual_dict)
-            if repeat_flag == 1:
+def optimise_deckle(data, minimum_trim):
+    df_width_roll = data[['WIDTH', 'NO.OF ROLL']].dropna()
+    df_width_roll['NO.OF ROLL'] = np.ceil(df_width_roll['NO.OF ROLL'])
+    grouped_df_width_roll = df_width_roll.groupby('WIDTH')['NO.OF ROLL'].sum().reset_index()
+    must_make_values = grouped_df_width_roll['WIDTH'].tolist()
+    must_make_number_repetitions = grouped_df_width_roll['NO.OF ROLL'].tolist()
+    # optional_values = [450,550,625,750,950,1080]
+    # optional_number = [15,4,12,16,3,15]
+    # optional_number_dict = dict(zip(optional_values,optional_number))
+    position = range(1, prms.max_arms + 1)
+    must_make_number_dict = dict(zip(must_make_values, must_make_number_repetitions))
+    residual_dict = must_make_number_dict.copy()
+    possible_width = prms.max_width - prms.minimum_trim
+    flag = 1
+    final_list_deckles = []
+    if minimum_trim == 0:
+        while flag == 1:
+            op_deckle, residual_dict, flag = get_optimised_knives_deckle(must_make_values, residual_dict, position, possible_width,
+                                                                          prms.min_arms)
+            op_deckle = sorted(op_deckle)
+            if flag == 1:
                 final_list_deckles.append(op_deckle)
+                repeat_flag = 1
+                while repeat_flag == 1:
+                    op_deckle, residual_dict, repeat_flag = get_repetitive_deckle(op_deckle, residual_dict)
+                    if repeat_flag == 1:
+                        final_list_deckles.append(op_deckle)
+    else:
+        while flag == 1:
+            op_deckle, residual_dict, flag = get_optimised_wastage_deckle(must_make_values, residual_dict, position,
+                                                                         possible_width,
+                                                                         prms.min_arms)
+            op_deckle = sorted(op_deckle)
+            if flag == 1:
+                final_list_deckles.append(op_deckle)
+                repeat_flag = 1
+                while repeat_flag == 1:
+                    op_deckle, residual_dict, repeat_flag = get_repetitive_deckle(op_deckle, residual_dict)
+                    if repeat_flag == 1:
+                        final_list_deckles.append(op_deckle)
+    # print(residual_dict)
+    # for i in final_list_deckles:
+    #     print(sum(i))
+    final_list_width = []
+    final_list_trim = []
+    for i in final_list_deckles:
+        final_list_width.append(sum(i))
+        final_list_trim.append(prms.max_width - sum(i))
+    final_list_deckles_tuples = [tuple(lst) for lst in final_list_deckles]
+    count_dict = dict(Counter(final_list_deckles_tuples))
+    print("Count dictionary:", count_dict)
+    df = pd.DataFrame(final_list_deckles)
+    df['Trim'] = final_list_trim
+    df['Total width'] = final_list_width
+    placeholder = -99999
+    df = df.fillna(placeholder)
+    df = df.groupby(df.columns.tolist(), as_index=False).size()
+    df = df.replace(placeholder, np.nan)
+    num_of_knive_changes = len(df)
+    total_trim = sum(final_list_trim)
+    print(df.to_string())
+    print('Knive changes: ', num_of_knive_changes)
+    print("Total trim: ", total_trim)
 
-print(final_list_deckles)
-print(residual_dict)
-for i in final_list_deckles:
-    print(sum(i))
-
-no_of_columns = max(len(sub_array) for sub_array in final_list_deckles)
-column_name = []
-for i in range(0, no_of_columns):
-    column_name.append(str(i))
-df = pd.DataFrame(final_list_deckles, columns=column_name)
-print(df)
-excel_file_path = 'output.xlsx'
-df.to_excel(excel_file_path, index=False)
+   # excel_file_path = 'output.xlsx'
+   # df.to_excel(excel_file_path, index=False)
 
 # In[5]:
-
 
 # option_and_must_dict, option_and_must_values = get_combined_optional_must_make(residual_dict,must_make_values,optional_values, optional_number_dict)
 # flag = 1
