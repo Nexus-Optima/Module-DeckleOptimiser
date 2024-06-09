@@ -233,7 +233,6 @@ def optimise_deckle(data, minimum_trim):
     df = df.replace(placeholder, np.nan)
     num_of_knive_changes = len(df)
     total_trim = sum(final_list_trim)
-    new_order_df = ['Trim','']
     print('Knive changes: ', num_of_knive_changes)
     print("Total trim: ", total_trim)
     completed_dict={}
