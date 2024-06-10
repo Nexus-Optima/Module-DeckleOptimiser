@@ -166,6 +166,10 @@ def get_combined_optional_must_make(residual_dict, must_make_values, optional_va
     return option_and_must_dict, option_and_must_values
 
 def optimise_deckle(data, minimum_trim):
+    product_type = data['TYPE'].iloc[0]
+    product_ID = data['ID'].iloc[0]
+    product_OD = data['OD'].iloc[0]
+    product_length = data['SAP LENGTH'].iloc[0]
     df_width_roll = data[['WIDTH', 'NO.OF ROLL']].dropna()
     df_width_roll['NO.OF ROLL'] = np.ceil(df_width_roll['NO.OF ROLL'])
     grouped_df_width_roll = df_width_roll.groupby('WIDTH')['NO.OF ROLL'].sum().reset_index()
@@ -215,20 +219,27 @@ def optimise_deckle(data, minimum_trim):
         final_list_trim.append(prms.max_width - sum(i))
     final_list_deckles_tuples = [tuple(lst) for lst in final_list_deckles]
     count_dict = dict(Counter(final_list_deckles_tuples))
-    print("Count dictionary:", count_dict)
     df = pd.DataFrame(final_list_deckles)
     df['Trim'] = final_list_trim
     df['Total width'] = final_list_width
+    df['Type'] = product_type
+    df['Core ID']=product_ID
+    df['Roll OD'] = product_OD
+    df['Length'] = product_length
     placeholder = -99999
     df = df.fillna(placeholder)
     df = df.groupby(df.columns.tolist(), as_index=False).size()
+    df = df.rename(columns = {'size': 'Sets'})
     df = df.replace(placeholder, np.nan)
     num_of_knive_changes = len(df)
     total_trim = sum(final_list_trim)
-    print(df.to_string())
     print('Knive changes: ', num_of_knive_changes)
     print("Total trim: ", total_trim)
-
+    completed_dict={}
+    for key in must_make_number_dict:
+        if key in residual_dict:
+            completed_dict[key]=must_make_number_dict[key]-residual_dict[key]
+    return completed_dict, df
    # excel_file_path = 'output.xlsx'
    # df.to_excel(excel_file_path, index=False)
 
