@@ -1,14 +1,14 @@
 import pandas as pd
 import numpy as np
+from Constants.parameters import Parameters
 
 from Optimisation.deckle_optimisation import get_combined_optional_must_make, optimise_residual_deckle
 from Output.customer_output import customer_table
-import Constants.parameters as prms
 
 
 def process_final_list(final_list_deckles):
     final_list_width = [sum(i) for i in final_list_deckles]
-    final_list_trim = [prms.max_width - sum(i) for i in final_list_deckles]
+    final_list_trim = [Parameters.max_width - sum(i) for i in final_list_deckles]
     return final_list_width, final_list_trim
 
 
@@ -61,7 +61,7 @@ def create_output(residual_dict, must_make_values, optional_values, optional_num
     final_list_deckles, option_and_must_dict, residual_dict = optimise_residual_deckle(option_and_must_values,
                                                                                        option_and_must_dict,
                                                                                        residual_dict, position,
-                                                                                       possible_width, prms.min_arms,
+                                                                                       possible_width, Parameters.min_arms,
                                                                                        final_list_deckles)
 
     final_list_width, final_list_trim = process_final_list(final_list_deckles)
@@ -92,14 +92,14 @@ def common_optimisation_logic(data, get_deckle_function):
     df_width_roll['NO.OF ROLL'] = np.ceil(df_width_roll['NO.OF ROLL'])
     grouped_df_width_roll = df_width_roll.groupby('WIDTH')['NO.OF ROLL'].sum().reset_index()
     must_make_values = grouped_df_width_roll['WIDTH'].tolist()
-    position = range(1, prms.max_arms + 1)
-    possible_width = prms.max_width - prms.minimum_trim
+    position = range(1, Parameters.max_arms + 1)
+    possible_width = Parameters.max_width - Parameters.minimum_trim
     must_make_number_repetitions = grouped_df_width_roll['NO.OF ROLL'].tolist()
     must_make_number_dict = dict(zip(must_make_values, must_make_number_repetitions))
     residual_dict = must_make_number_dict.copy()
 
     final_list_deckles, residual_dict = get_deckle_function(must_make_values, residual_dict, position, possible_width,
-                                                            prms.min_arms)
+                                                            Parameters.min_arms)
 
     completed_dict, plan_df = create_output(residual_dict, must_make_values, optional_values, optional_number_dict,
                                             position, possible_width, final_list_deckles, data)
