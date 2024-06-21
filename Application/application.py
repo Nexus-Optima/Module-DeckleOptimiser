@@ -19,10 +19,10 @@ def upload_file():
     if file:
         try:
             df = pd.read_excel(file)
+            df.columns = df.columns.str.strip()
             data = df.to_dict(orient='records')
             dfs = split_dataframe(df)
             for name, df_group in dfs.items():
-                # second parameter is boolean to decide whether minimum waste or minimum changes is needed
                 optimise_deckle(df_group)
             return jsonify({'message': 'File processed successfully', 'data': data}), 200
         except Exception as e:
