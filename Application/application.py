@@ -36,12 +36,15 @@ def upload_file():
 @application.route('/api/fetch_plan_data', methods=['GET'])
 def get_plan_data():
     algorithm = request.args.get('algorithm')
+    client_name = request.args.get('client_name')
+    product_name = request.args.get('product_name')
+    product_type = request.args.get('product_type')
     if algorithm not in ['knives', 'wastage']:
         return jsonify({'error': 'Invalid algorithm name'}), 400
     if algorithm == 'knives':
-        result = get_knives_results()
+        result = get_knives_results(client_name, product_name, product_type)
     else:
-        result = get_wastage_results()
+        result = get_wastage_results(client_name, product_name, product_type)
     return result
 
 
