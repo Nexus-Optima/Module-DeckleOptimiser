@@ -23,7 +23,11 @@ def upload_file():
             data = df.to_dict(orient='records')
             dfs = split_dataframe(df)
             for name, df_group in dfs.items():
-                optimise_deckle(df_group)
+                client_metadata = {
+                    'client_name': 'CPFL',
+                    'order_config': name,
+                }
+                optimise_deckle(client_metadata, df_group)
             return jsonify({'message': 'File processed successfully', 'data': data}), 200
         except Exception as e:
             return jsonify({'error': str(e)}), 500
