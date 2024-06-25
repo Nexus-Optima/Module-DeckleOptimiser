@@ -29,10 +29,14 @@ def parse_csv_to_json(csv_content):
     return df.to_dict(orient='records')
 
 
-def save_results_to_file(data, algorithm_name, result_type):
+def save_results_to_file(client_metadata, data, algorithm_name, result_type):
+    client_name = client_metadata['client_name']
+    product_type = client_metadata['order_config'][0]
+    product_config = str(client_metadata['order_config'][1]) +'_'+ str(client_metadata['order_config'][2]) + '_' + str(client_metadata['order_config'][3])
+    folder_path = client_name+'/'+product_type+'/'+product_config+'/' + algorithm_name
     file_name = f'/tmp/{algorithm_name}_{result_type}_results.csv'
     data.to_csv(file_name, index=False)
-    upload_to_s3(file_name, algorithm_name)
+    upload_to_s3(file_name, folder_path)
 
 
 def get_knives_results():
