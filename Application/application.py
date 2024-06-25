@@ -20,15 +20,16 @@ def upload_file():
         try:
             df = pd.read_excel(file)
             df.columns = df.columns.str.strip()
-            data = df.to_dict(orient='records')
             dfs = split_dataframe(df)
+            configs = []
             for name, df_group in dfs.items():
                 client_metadata = {
                     'client_name': 'CPFL',
                     'order_config': name,
                 }
+                configs.append(name)
                 optimise_deckle(client_metadata, df_group)
-            return jsonify({'message': 'File processed successfully', 'data': data}), 200
+            return jsonify({'message': 'File processed successfully', 'data': str(configs)}), 200
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
