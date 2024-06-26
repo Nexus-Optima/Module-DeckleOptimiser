@@ -33,7 +33,11 @@ def upload_file():
                     'order_config': name,
                 }
                 optimise_deckle(client_metadata, df_group)
-            return jsonify({'message': 'File processed successfully', 'product_type': product_types, 'product_config': product_config}), 200
+            product_metadata = {
+                'product_type': product_types,
+                'product_config': product_config
+            }
+            return jsonify({'message': 'File processed successfully', 'data': product_metadata}), 200
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
