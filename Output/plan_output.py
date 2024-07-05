@@ -57,12 +57,21 @@ def create_dataframe(final_list_deckles, final_list_trim, final_list_width, prod
     return df
 
 
-def calculate_knive_changes_and_trim(df, final_list_trim):
+def calculate_metrics(df, final_list_trim):
     num_of_knive_changes = len(df)
     total_trim = sum(final_list_trim)
-    print('Knive changes:', num_of_knive_changes)
-    print("Total trim:", total_trim)
-    return num_of_knive_changes, total_trim
+    total_sets = df['Sets'].sum()
+    average_trim = round(total_trim/total_sets,2)
+    average_trim_percent = round((average_trim/Parameters.max_width) * 100,2)
+    metric_dict = {
+        'Trim mm': [average_trim],
+        'Trim Percent': [average_trim_percent],
+        'Total Trim': [total_trim],
+        'Knive Changes': [num_of_knive_changes],
+        'Total Sets': [total_sets]
+    }
+    metric_df = pd.DataFrame(metric_dict)
+    return metric_df
 
 
 def calculate_completed_dict(must_make_number_dict, residual_dict):
@@ -86,11 +95,11 @@ def create_output(residual_dict, must_make_values, optional_values, optional_num
     product_info = create_product_info(data)
 
     df = create_dataframe(final_list_deckles, final_list_trim, final_list_width, product_info)
-    calculate_knive_changes_and_trim(df, final_list_trim)
+    metric_dict = calculate_metrics(df, final_list_trim)
     completed_dict = convert_lst_to_dict(final_list_deckles)
     print("check, check, check", completed_dict)
 
-    return completed_dict, df
+    return completed_dict, df, metric_dict
 
 
 def common_optimisation_logic(data, get_deckle_function):
@@ -99,7 +108,8 @@ def common_optimisation_logic(data, get_deckle_function):
     if data_must_make.empty:
         plan_df = pd.DataFrame()
         customer_df = pd.DataFrame()
-        return plan_df, customer_df
+        metric_df = pd.DataFrame()
+        return plan_df, customer_df, metric_df
     df_width_roll = data_must_make[[OrderDetails.width, OrderDetails.number_of_rolls]].dropna()
     df_width_roll[OrderDetails.number_of_rolls] = np.ceil(df_width_roll[OrderDetails.number_of_rolls])
     grouped_df_width_roll = df_width_roll.groupby(OrderDetails.width)[OrderDetails.number_of_rolls].sum().reset_index()
@@ -119,7 +129,7 @@ def common_optimisation_logic(data, get_deckle_function):
     final_list_deckles, residual_dict = get_deckle_function(must_make_values, residual_dict, position, possible_width,
                                                             Parameters.min_arms)
 
-    completed_dict, plan_df = create_output(residual_dict, must_make_values, optional_values, optional_number_dict,
+    completed_dict, plan_df, metric_df = create_output(residual_dict, must_make_values, optional_values, optional_number_dict,
                                             position, possible_width, final_list_deckles, data)
     customer_df = customer_table(completed_dict, data)
-    return plan_df, customer_df
+    return plan_df, customer_df, metric_df
