@@ -9,6 +9,14 @@ application = Flask(__name__)
 CORS(application)
 
 
+@application.route('/', methods=['GET'])
+def insert_client_database():
+    try:
+        return jsonify("200 : Status Okay")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @application.route('/api/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
