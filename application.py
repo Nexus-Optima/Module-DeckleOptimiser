@@ -10,7 +10,7 @@ CORS(application)
 
 
 @application.route('/', methods=['GET'])
-def insert_client_database():
+def health_check():
     try:
         return jsonify("200 : Status Okay")
     except Exception as e:
