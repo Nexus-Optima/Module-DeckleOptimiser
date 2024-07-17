@@ -4,9 +4,14 @@ import pandas as pd
 from Algorithm.optimiser import optimise_deckle
 from Database.s3_operations import get_knives_results, get_wastage_results
 from Preprocessing.pre_process import split_dataframe
+from dotenv import load_dotenv
+import logging
 
 application = Flask(__name__)
 CORS(application)
+
+load_dotenv()
+logger = logging.getLogger()
 
 
 @application.route('/', methods=['GET'])
