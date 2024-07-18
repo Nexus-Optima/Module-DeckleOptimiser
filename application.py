@@ -29,7 +29,6 @@ def upload_file():
         df = pd.DataFrame(data['data'])
         df.columns = df.columns.str.strip()
         dfs = split_dataframe(df)
-        print(dfs.items())
         product_types = []
         product_config = []
         for name, df_group in dfs.items():
