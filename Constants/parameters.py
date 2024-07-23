@@ -2,7 +2,7 @@ class Parameters:
     min_arms = 4
     max_arms = 16
     max_width = 8700
-    minimum_trim = 200
+    minimum_trim = 250
 
 class Optional:
     column_name = 'Option'
