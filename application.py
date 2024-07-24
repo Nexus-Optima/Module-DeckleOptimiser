@@ -13,12 +13,14 @@ CORS(application)
 load_dotenv()
 logger = logging.getLogger()
 
+
 @application.route('/', methods=['GET'])
 def health_check():
     try:
         return jsonify("200 : Status Okay")
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @application.route('/api/upload', methods=['POST'])
 def upload_file():
@@ -49,6 +51,7 @@ def upload_file():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 @application.route('/api/fetch_plan_data', methods=['GET'])
 def get_plan_data():
     algorithm = request.args.get('algorithm')
@@ -62,6 +65,7 @@ def get_plan_data():
     else:
         result = get_wastage_results(client_name, product_name, product_config)
     return result
+
 
 if __name__ == '__main__':
     application.run(host="0.0.0.0", debug=True)
