@@ -68,7 +68,7 @@ def optimise_residual_deckle(values, option_and_must_dict, residual_dict, positi
                 if v.varValue > 0:
                     print(v.name, "=", v.varValue)
         status = prob.status
-        if not status:
+        if status != 1:
             break
         optimised_deckle.sort()
         final_list_deckle.append(optimised_deckle)
