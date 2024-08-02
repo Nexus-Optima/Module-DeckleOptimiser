@@ -72,7 +72,7 @@ def optimise_residual_deckle(values, option_and_must_dict, residual_dict, positi
             # total width is positive
         prob += max_width - lpSum(choices[p][v] * v for v in values for p in position) >= 0
         # total width threshold as 200
-        # prob += max_width - lpSum(choices[p][v] * v for v in values for p in position) <= 800
+        prob += max_width - lpSum(choices[p][v] * v for v in values for p in position) <= 1000
         prob.solve(PULP_CBC_CMD(timeLimit=5))
         if LpStatus[prob.status] == 'Optimal':
             for p in position:
