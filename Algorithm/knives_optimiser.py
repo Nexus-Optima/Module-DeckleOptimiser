@@ -17,6 +17,7 @@ def get_optimised_knives_deckle(values, number_dict, position, max_width, min_ar
             if number_dict.get(v) > 0:
                 prob += obj_value >= lpSum(choices[p][v] for p in position) / number_dict.get(v)
                 # A constraint ensuring each width has only one value
+                prob += lpSum(choices[p][v] for p in position) / number_dict.get(v) <= 1/2
         for p in position:
             if p <= min_arms:
                 prob += lpSum([choices[p][v] for v in values]) == 1
@@ -28,8 +29,8 @@ def get_optimised_knives_deckle(values, number_dict, position, max_width, min_ar
         # total width is positive
         prob += max_width - lpSum(choices[p][v] * v for v in values for p in position) >= 0
         # total width threshold as 200
-        prob += max_width - lpSum(choices[p][v] * v for v in values for p in position) <= 200
-        prob.solve(PULP_CBC_CMD(timeLimit=1))
+        prob += max_width - lpSum(choices[p][v] * v for v in values for p in position) <= 50
+        prob.solve(PULP_CBC_CMD(timeLimit=5))
         if LpStatus[prob.status] == 'Optimal':
             for p in position:
                 for v in values:
@@ -39,25 +40,6 @@ def get_optimised_knives_deckle(values, number_dict, position, max_width, min_ar
             for v in prob.variables():
                 if v.varValue > 0:
                     print(v.name, "=", v.varValue)
-        # list_of_optimised_deckle.append(optimised_deckle)
-        # for v in distinct_optimised_deckle:
-        #    print("Sum of choices[w][v] for w in widths is ")
-        #    print(sum(choices[w][v].varValue for w in widths))
-        #    print(len(optimised_deckle))
-        # prob+=lpSum(choices[w][optimised_deckle[0]] for w in widths)<=2
-        # prob.solve(PULP_CBC_CMD(timeLimit=1))
-        # if LpStatus[prob.status] == 'Optimal':
-        #    for w in widths:
-        #        for v in values:
-        #            if value(choices[w][v]) == 1:
-        #                optimised_deckle_2.append(v)
-        #                #number_dict[v] -= 1
-        #                if v not in distinct_optimised_deckle:
-        #                    distinct_optimised_deckle.append(v)
-        #    for v in prob.variables():
-        #        if v.varValue > 0:
-        #            print("Solution 2")
-        #            print(v.name, "=", v.varValue)
         status = prob.status
         if status != 1:
             break
