@@ -21,6 +21,8 @@ class OrderDetails:
     customer_name = 'Buyer Name'
     consignee_name = 'Consignee Name'
     product_qty = 'Pend. Prod'
+    so_qty = 'SO.Qty'
+    current_stock = 'Stock'
     product_thickness = 'Micron'
     product_density = 'DENSITY'
 
