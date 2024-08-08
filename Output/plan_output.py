@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from Constants.parameters import Parameters, Optional, OrderDetails
 
-from Optimisation.deckle_optimisation import get_combined_optional_must_make, optimise_residual_deckle
+from Optimisation.deckle_optimisation import get_combined_optional_must_make, optimise_residual_deckle, get_optimised_deckle
 from Output.customer_output import customer_table
 from collections import Counter
 
@@ -97,12 +97,11 @@ def create_output(residual_dict, must_make_values, optional_values, optional_num
     df = create_dataframe(final_list_deckles, final_list_trim, final_list_width, product_info)
     metric_dict = calculate_metrics(df, final_list_trim)
     completed_dict = convert_lst_to_dict(final_list_deckles)
-    print("check, check, check", completed_dict)
 
     return completed_dict, df, metric_dict
 
 
-def common_optimisation_logic(data, get_deckle_function):
+def common_optimisation_logic(data, alpha):
     data_optional = data[data[Optional.column_name] == Optional.optional]
     data_must_make = data[data[Optional.column_name] == Optional.must_make]
     if data_must_make.empty:
@@ -126,8 +125,8 @@ def common_optimisation_logic(data, get_deckle_function):
     must_make_number_dict = dict(zip(must_make_values, must_make_number_repetitions))
     residual_dict = must_make_number_dict.copy()
 
-    final_list_deckles, residual_dict = get_deckle_function(must_make_values, residual_dict, position, possible_width,
-                                                            Parameters.min_arms)
+    final_list_deckles, residual_dict = get_optimised_deckle(must_make_values, residual_dict, position, possible_width,
+                                                            Parameters.min_arms, alpha)
 
     completed_dict, plan_df, metric_df = create_output(residual_dict, must_make_values, optional_values, optional_number_dict,
                                             position, possible_width, final_list_deckles, data)
