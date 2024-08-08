@@ -60,3 +60,15 @@ def get_wastage_results(client_name, product_name, product_type):
     metric_json = parse_csv_to_json(metric_json)
 
     return {'plan': plan_json, 'customer': customer_json, 'metric': metric_json}
+
+
+def get_hybrid_results(client_name, product_name, product_type):
+    plan_json = read_from_s3(client_name, product_name, product_type, 'hybrid_optimisation', 'planning_output')
+    customer_json = read_from_s3(client_name, product_name, product_type, 'hybrid_optimisation', 'customer_output')
+    metric_json = read_from_s3(client_name, product_name, product_type, 'hybrid_optimisation', 'metrics_output')
+
+    customer_json = parse_csv_to_json(customer_json)
+    plan_json = parse_csv_to_json(plan_json)
+    metric_json = parse_csv_to_json(metric_json)
+
+    return {'plan': plan_json, 'customer': customer_json, 'metric': metric_json}

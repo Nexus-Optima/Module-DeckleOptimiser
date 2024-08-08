@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 from Algorithm.optimiser import optimise_deckle
-from Database.s3_operations import get_knives_results, get_wastage_results
+from Database.s3_operations import get_knives_results, get_wastage_results, get_hybrid_results
 from Preprocessing.pre_process import split_dataframe
 from dotenv import load_dotenv
 import logging
@@ -58,12 +58,14 @@ def get_plan_data():
     client_name = request.args.get('client_name')
     product_name = request.args.get('product_name')
     product_config = request.args.get('product_config')
-    if algorithm not in ['knives', 'wastage']:
+    if algorithm not in ['knives', 'wastage', 'hybrid']:
         return jsonify({'error': 'Invalid algorithm name'}), 400
     if algorithm == 'knives':
         result = get_knives_results(client_name, product_name, product_config)
-    else:
+    elif algorithm == 'wastage':
         result = get_wastage_results(client_name, product_name, product_config)
+    else:
+        result = get_hybrid_results(client_name, product_name, product_config)
     return result
 
 
